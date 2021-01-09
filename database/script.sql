@@ -74,12 +74,20 @@ begin
 if (@payload = 0) 
 begin
 select count(*) from dbo.registrations
+return;
 end
 
+-- return all
 if (@payload = 1)
 begin
-print 'return all data'
+select 
+	cast(
+		(select *
+		from
+			dbo.registrations t
+		for json path)
+	as nvarchar(max)) as result;
+    return;
 end
-
 end
 go
