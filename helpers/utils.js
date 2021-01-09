@@ -1,24 +1,70 @@
 const Connection = require('tedious').Connection;
 const Request = require('tedious').Request;
+const TYPES = require('tedious').TYPES;
 
 const exectueSQL = (context, verb, payload) => {
-
-    paramPayload = payload ? JSON.stringify(payload) : "null";
+    var result = "";
+    paramPayload = payload ? JSON.stringify(payload) : "";
 
     console.log('executing from executeSQL');
 
-    const name = (paramPayload || "testing");
-    console.log(paramPayload);
+    // setup connection details
+    const _connection = new Connection({
+        server: process.env["db_server"],
+        authentication : {
+            type: 'default',
+            options: {
+                userName: process.env["db_user"],
+                password: process.env["db_password"]
+            }
+        },
+        options: {
+            database: process.env["db_database"],
+            encrypt: true,
+            validateBulkLoadParameters: true
+        }        
+    });
 
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+    // configure db request
+    const _request = new Request('[AIA].post_registrations', (err) => {
+        if (err)
+        {
+            context.res.status = 500;
+            context.res.body = err; // chanage this to error message
+            console.log(err);
+        }
+        else {
+            context.res = {
+                body: result,
+                status: 200
+            }
+        }
+        context.done(); // completes functions and return to the client
+    });
+    if (paramPayload)
+        _request.addParameter('payload', TYPES.NVarChar, paramPayload, Infinity);
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
-    context.done();
+    _connection.on('connect', (err) => {
+        if (err)
+        {
+            context.res.status = 500;
+            context.res.body = err; // chanage this to error message
+            console.log(err);
+            context.done(); // completes functions and return to the client
+        }
+        else {
+            _connection.callProcedure(_request);
+        }
+    });
+
+    _request.on('row', columns => {
+        columns.forEach(col => {
+            result += col.value;
+        });
+    });
+
+    _connection.connect();
+
 
 };
 
