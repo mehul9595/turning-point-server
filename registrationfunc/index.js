@@ -1,31 +1,43 @@
-const { exectueSQL } = require('../helpers/utils');
+const { exectueSQL } = require("../helpers/utils");
 
 const parseBool = (params) => {
-    return !((params === 'false') || (params === '0') || (params === '') || (params === undefined));
-}
+  return !(
+    params === "false" ||
+    params === "0" ||
+    params === "" ||
+    params === undefined
+  );
+};
 
+const registrationAPI = async function (context, req) {
+  const method = req.method.toLowerCase();
+  var payload = null;
 
-registrationAPI = function (context, req) {
-    const method = req.method.toLowerCase();
-    var payload = null;
-    /*
-    TODO: 
-        1) Get count of registrations
-        2) post registration forms
-     */
+  const setContext = function (body, status = 200) {
+    context.res.status = status;
+    context.res.body = body;
+    context.done();
+  };
 
-    switch (method) {
-        case "get":
-            payload = parseBool(req.params.all || req.query.all);
-            console.log(`'param: ${payload}'`);
-            break;
-        case "post":
-            payload = req.body;
-            console.log(`'body: ${payload}'`);
-            break;
-    }    
+  switch (method) {
+    case "get":
+      payload = parseBool(req.params.all || req.query.all);
+      console.log(`'param: ${payload}'`);
+      break;
+    case "post":
+      payload = req.body;
+      console.log(`'body: ${payload}'`);
+      break;
+  }
 
-    exectueSQL(context, method, payload);
-}
+    await exectueSQL(method, payload)
+    .then((ok) => {
+      setContext(ok);
+    })
+    .catch((err) => {
+      context.log.error(err);
+      setContext("Error while executing SQL statement", 500);
+    });
+};
 
-module.exports = registrationAPI;
+exports.registrationAPI = registrationAPI;
