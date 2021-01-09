@@ -9,7 +9,7 @@
         "get",
         "post"
       ],
-      "route": "registration/{id:int?}"
+      "route": "registration/{all:bool?}"
     },
     {
       "type": "http",
