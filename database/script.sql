@@ -1,10 +1,13 @@
 create schema [AIA];
 go
 
-create user [FuncApp] with password = 'password'
+create user [func-backend] with password = 'M2J92423oZ3Y9W1bOg25FU'
 go
 
-grant execute on schema::[AIA] to [FuncApp]
+grant execute on schema::[AIA] to [func-backend]
+go
+
+grant select on schema::[dbo] to [func-backend]
 go
 
 create sequence dbo.[global_sequence]
@@ -48,10 +51,13 @@ output inserted.id into @ids
 select [firstName], [lastName], [email] from openjson(@payload) with
 (
 	 firstName nvarchar(50),
-    lastName narvarchar(50),
+    lastName nvarchar(50),
     email nvarchar(100)
 )
 
-declare @newPayload as nvarchar(max) = (select id from @ids for json auto);
-exec "select * from dbo.registrations where id = "+ @newPayload
+declare @id int 
+select @id = id from @ids
+-- declare @newPayload as nvarchar(max) = (select id from @ids for json auto);
+
+execute sp_executesql N'select * from dbo.registrations where id = @id' , N'@id int', @id = @id
 go
