@@ -61,3 +61,25 @@ select @id = id from @ids
 
 execute sp_executesql N'select * from dbo.registrations where id = @id' , N'@id int', @id = @id
 go
+
+/*
+    GET Registrations count
+*/
+create or alter procedure [AIA].[get_registrations]
+@payload bit = 0
+as
+begin
+
+-- return count
+if (@payload = 0) 
+begin
+select count(*) from dbo.registrations
+end
+
+if (@payload = 1)
+begin
+print 'return all data'
+end
+
+end
+go
