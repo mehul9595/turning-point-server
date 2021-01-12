@@ -24,7 +24,9 @@ create table dbo.registrations
 	id int not null primary key default (next value for [global_sequence]),
     firstName nvarchar(50) not null,
     lastName narvarchar(50) not null,
-    email nvarchar(100) not null
+    email nvarchar(100) not null,
+	phone nvarchar(10) not null,
+	dateofBirth date 
 )
 go
 
